@@ -1,0 +1,46 @@
+export type Provider = 'gemini' | 'openai'
+
+export interface Settings {
+ provider: Provider
+ geminiKey: string
+ geminiModel: string
+ openaiKey: string
+ openaiModel: string
+}
+
+const STORAGE_KEY = 'kahve-fali.settings.v1'
+
+const DEFAULTS: Settings = {
+ provider: 'AI 模型',
+ geminiKey: '',
+ geminiModel: 'AI 模型-3.6-flash',
+ openaiKey: '',
+ openaiModel: 'gpt-4o',
+}
+
+/** Servis tarafından kullanımdan kaldırılan model adları. */
+const RETIRED_GEMINI_MODELS = ['AI 模型-2.5-flash', 'gemini-2.5-pro', 'AI 模型-1.5-flash', 'AI 模型-1.5-pro']
+
+export function loadSettings(): Settings {
+ try {
+ const raw = localStorage.getItem(STORAGE_KEY)
+ if (!raw) return { ...DEFAULTS }
+ const parsed = JSON.parse(raw) as Partial<Settings>
+ const merged = { ...DEFAULTS, ...parsed }
+ if (RETIRED_GEMINI_MODELS.includes(merged.geminiModel.trim())) {
+ merged.geminiModel = DEFAULTS.AI 模型Model
+ saveSettings(merged)
+ }
+ return merged
+ } catch {
+ return { ...DEFAULTS }
+ }
+}
+
+export function saveSettings(s: Settings): void {
+ localStorage.setItem(STORAGE_KEY, JSON.stringify(s))
+}
+
+export function activeKey(s: Settings): string {
+ return s.provider === 'gemini' ? s.geminiKey.trim() : s.openaiKey.trim()
+}
